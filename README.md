@@ -1,6 +1,6 @@
 # Supplementary code and data
 
-The code below was used to train [http://www.smorfland.uni.wroc.pl/shiny/mgp/](MethanoGram): predictor of methanograms' culture conditions.
+The code below was used to train (http://www.smorfland.uni.wroc.pl/shiny/mgp/)[MethanoGram]: predictor of methanograms' culture conditions.
 
 Files description:
 *data/seq_dat.RData*: sequences used in the training and evaluation of MethanoGram.
