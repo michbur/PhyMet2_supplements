@@ -209,29 +209,24 @@ appender <- function(string) {
 
 library(latex2exp)
 
-p <- filter(res, type %in% c("MethanoGram (only 16S rRNA)", "null model")) %>%
-  droplevels() %>% 
-  mutate(type = ifelse(type == "MethanoGram (only 16S rRNA)", "MethanoGram", type)) %>% 
-  ggplot(aes(x = type, y = error, fill = type, label = round(error, 2))) +
+p <- inner_join(filter(res, type %in% c("MethanoGram (only 16S rRNA)", "null model")) %>%
+                  droplevels() %>% 
+                  mutate(type = ifelse(type == "MethanoGram (only 16S rRNA)", "MethanoGram", type)),
+                summarise_if(conditions_dat, is.numeric, .funs = c("sd")) %>% 
+                  melt(variable.name = "condition",
+                       value.name = "sd")) %>% 
+  mutate(norm = error/sd,
+         nice_label = paste0(round(error, 2), "\n(", round(norm, 2), ")")) %>% 
+  ggplot(aes(x = type, y = error, fill = type, label = nice_label)) +
   geom_col() +
-  scale_y_continuous(expand = c(0.15, 0)) +
-  geom_text(size = 3, aes(y = 1.05 * error)) +
+  scale_y_continuous("Mean error", expand = c(0.15, 0)) +
+  geom_text(size = 3, aes(y = error)) +
   scale_x_discrete("") +
   scale_fill_manual("", values = c("cornflowerblue", "chocolate1")) +
   facet_wrap(~ nice, scales = "free_y", nrow = 1, 
              labeller = as_labeller(appender, default = label_parsed)) +
   theme_bw(base_size = 8) +
   theme(legend.position = "bottom")
-
-
-ggsave(plot = p, filename = "methanogram_jackknife.eps", device = "eps", 
-       width = unit(6.5, "in"), height = unit(3.5, "in"))
-
-tiff(filename = "methanogram_jackknife.eps", height = 3.5,
-     width = 6.5, pointsize = 18, units = "in", compression = "lzw+p",
-     res = 500)
-p
-dev.off()
 
 cairo_pdf(filename = "methanogram_jackknife.pdf", height = 3.5,
           width = 6.5, pointsize = 12, fallback_resolution = 500)
@@ -283,8 +278,12 @@ do.call(rbind, jackknife_res_rna) %>%
   table %>% 
   sort
   
-do.call(rbind, jackknife_res_rna) %>% 
-  mutate(error = sqrt((truth - response)^2)) %>% 
-  group_by(condition) %>% 
-  filter(condition != "growth_rate") %>% 
-  summarise(mean_error = round(mean(error), 2))
+inner_join(filter(res, type == "MethanoGram (only 16S rRNA)") %>%
+             droplevels() %>% 
+             data.frame() %>% 
+             select(condition, nice, error),
+           summarise_if(conditions_dat, is.numeric, .funs = c("sd")) %>% 
+             melt(variable.name = "condition",
+                  value.name = "sd")) %>% 
+  mutate(norm = error/sd) %>% 
+  select(nice, error, norm)
