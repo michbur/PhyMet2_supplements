@@ -8,6 +8,8 @@ Files description:
 *train_predictor_multi.R* and *train_predictor_multi_log.R*: nested cross-validation of MethanoGram (normal and log-transformed data). Results are respectively: *ngram_benchmark_full.RData* and *ngram_benchmark_full_log.RData*.
 *results/best_pars.RData*: hyperparameters of the final MethanoGram iterations.
 *jackknife.R*: the jackknife evaluation of the final MethanoGram iterations.
+*train_for_app.R*: training of the model for the MethanoGram app.
+*app*: MethanoGram (shiny app).
 
 # Session info
 
